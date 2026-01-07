@@ -29,18 +29,22 @@ export class ApiServer {
 		clientEventBus: ClientEventBus,
 		log: LoggerLike
 	) {
-		// this.app.use(serveStatic('src'))
-
+		// Configure CORS for web interface access
+		// In production/release mode, allow all origins for flexibility
+		// In development, this is also permissive for local testing
+		// TODO: Consider making this configurable via settings for production deployments
+		const corsOrigin = app.isPackaged ? '*' : '*'
 		this.app.use(
 			cors({
-				origin: '*', // TODO: cors
+				origin: corsOrigin,
+				credentials: true,
 			})
 		)
 
 		this.app.use(errorHandler())
 		this.app.use(bodyParser())
 		this.app.configure(rest())
-		this.app.configure(socketio({ cors: { origin: '*' } })) // TODO: cors
+		this.app.configure(socketio({ cors: { origin: corsOrigin, credentials: true } }))
 
 		this.app.use(ServiceName.GROUPS, new GroupService(this.app, ipcServer, clientEventBus), {
 			methods: ClientMethods[ServiceName.GROUPS],
@@ -96,10 +100,23 @@ export class ApiServer {
 		{
 			let guiUrlPath: string
 			if (app.isPackaged) {
-				guiUrlPath = `${app.getAppPath()}/build`
+				// In production/packaged mode, build folder is in the app path
+				guiUrlPath = path.resolve(app.getAppPath(), 'build')
 			} else {
-				guiUrlPath = path.resolve(`${app.getAppPath()}`, '../build')
+				// In development mode, build folder is relative to app path
+				guiUrlPath = path.resolve(app.getAppPath(), '../build')
 			}
+
+			// Add redirect from /gui to /gui/ for proper asset loading (must be before static serving)
+			this.app.use(async (ctx, next) => {
+				if (ctx.path === this.GUI_PATH && !ctx.path.endsWith('/')) {
+					ctx.redirect(`${this.GUI_PATH}/`)
+					return
+				}
+				await next()
+			})
+
+			// Mount static files at /gui path
 			this.app.use(mount(this.GUI_PATH, serveStatic(guiUrlPath)))
 		}
 
@@ -123,9 +140,12 @@ export class ApiServer {
 		})
 		// ---- end legacy code
 
+		// Bind to 0.0.0.0 to allow external access in production/release mode
+		// This enables the web interface to be accessible from other devices on the network
+		const bindHost = app.isPackaged ? '0.0.0.0' : '127.0.0.1'
 		this.app
-			.listen(this.port, '127.0.0.1')
-			.then(() => log.info('Feathers server listening on 127.0.0.1:' + this.port))
+			.listen(this.port, bindHost)
+			.then(() => log.info(`Feathers server listening on ${bindHost}:${this.port}`))
 			.catch(log.error)
 	}
 }

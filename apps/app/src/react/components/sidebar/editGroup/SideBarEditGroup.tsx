@@ -239,7 +239,7 @@ export const SideBarEditGroup: React.FC<{
 							)}
 							<div className="setting">
 								<BooleanInput
-									label="Auto Step (cycle through parts)"
+									label="Auto Step on Repeat"
 									{...inputValue(modifiableGroups, (g) => g.autoStep, undefined)}
 									disabled={modifiableGroups.length === 0}
 									onChange={(value) => {

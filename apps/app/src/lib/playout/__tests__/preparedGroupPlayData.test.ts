@@ -1,11 +1,12 @@
 import { prepareGroupPlayData } from '../preparedGroupPlayData.js'
 import { getDefaultGroup, getDefaultPart } from '../../defaults.js'
-import { Group } from '../../../models/rundown/Group.js'
+import { Group, PlayoutMode } from '../../../models/rundown/Group.js'
 import * as RundownActions from '../../../electron/rundownActions.js'
 import { findPartInGroup, updateGroupPlayingParts } from '../../util.js'
 import { Part } from '../../../models/rundown/Part.js'
 import { getGroupPlayData } from '../groupPlayData.js'
 import { PlayPartEndAction, SectionEndAction } from '../../../models/GUI/PreparedPlayhead.js'
+import { RepeatingType } from '../../timeLib.js'
 
 describe('prepareGroupPlayData', () => {
 	describe('Default Group', () => {
@@ -1054,6 +1055,65 @@ describe('prepareGroupPlayData', () => {
 	// Pause (cue) Part B when playing Part A
 
 	// Schedule play
+
+	describe('Scheduled Group with Auto Step', () => {
+		function getScheduledGroup(): Group {
+			const group = getCommonGroup()
+			group.oneAtATime = true
+			group.autoPlay = false
+			group.loop = false
+			group.playoutMode = PlayoutMode.SCHEDULE
+
+			const startTime = {
+				year: 2024,
+				month: 0,
+				date: 1,
+				weekDay: 1,
+				hour: 0,
+				minute: 0,
+				second: 0,
+				millisecond: 0,
+				unixTimestamp: 0,
+			}
+
+			group.schedule = {
+				activate: true,
+				startTime,
+				repeating: {
+					type: RepeatingType.CUSTOM,
+					intervalCustom: 1000,
+					repeatUntil: undefined,
+				},
+			}
+
+			return group
+		}
+
+		test('Auto Step on Repeat cycles through parts (schedule only)', () => {
+			const group0 = getScheduledGroup()
+			group0.autoStep = true
+
+			const prepared = prepareGroupPlayData(group0, 0)
+			if (!prepared) throw new Error('Prepared is falsy')
+			if (prepared.type !== 'single') throw new Error('Expected single playdata for oneAtATime group')
+
+			const partIds = prepared.sections.map((section) => section.parts[0]?.part.id)
+			expect(partIds).toEqual(['partA', 'partB', 'partC', 'partD'])
+		})
+
+		test('Auto Step on Repeat with Auto Play still steps by repeat', () => {
+			const group0 = getScheduledGroup()
+			group0.autoStep = true
+			group0.autoPlay = true
+
+			const prepared = prepareGroupPlayData(group0, 0)
+			if (!prepared) throw new Error('Prepared is falsy')
+			if (prepared.type !== 'single') throw new Error('Expected single playdata for oneAtATime group')
+
+			const firstPartIds = prepared.sections.map((section) => section.parts[0]?.part.id)
+			expect(firstPartIds).toEqual(['partA', 'partB', 'partC', 'partD'])
+		})
+	})
 })
 function getPart(group: Group, partId: string): Part {
 	const part = findPartInGroup(group, partId)

@@ -74,6 +74,17 @@ Assign keys on Stream&nbsp;Deck or X-keys to playout actions.
 
 ![Stream Deck GUI](/doc/img/streamdeck-GUI.gif) ![Stream Deck](/doc/img/streamdeck.gif)
 
+## Web GUI
+
+SuperConductor includes an optional web-based GUI that can be opened in a browser.
+
+- **Default port**: `5500`
+- **Local access (same machine)**: `http://localhost:5500/gui/`
+- **Remote access (other machines)**: `http://<server-ip>:5500/gui/`
+  - In packaged/release builds the internal web server binds to `0.0.0.0`, so the GUI is reachable from other machines on the network (subject to firewalls).
+  - In development builds it binds to `127.0.0.1` by default; this can be overridden for lab/testing environments by starting SuperConductor with `SC_GUI_BIND_ALL=1` in the environment.
+- From the desktop app you can also open the web GUI via the “Open Web Interface” menu item, which launches the default browser to the correct URL.
+
 ## HTTP API
 
 SuperConductor currently has a limited, internal, and unstable HTTP API. We plan to add a public and stable HTTP API with proper documentation in the future, but for now this internal API is available by default at `http://127.0.0.1:5500/api/internal`. The port can be changed by passing `--internal-http-api-port XXXX` as an argument to SuperConductor. This API can be disabled by passing the `--disable-internal-http-api` argument.

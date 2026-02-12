@@ -141,8 +141,9 @@ export class ApiServer {
 		// ---- end legacy code
 
 		// Bind to 0.0.0.0 to allow external access in production/release mode
-		// This enables the web interface to be accessible from other devices on the network
-		const bindHost = app.isPackaged ? '0.0.0.0' : '127.0.0.1'
+		// This enables the web interface to be accessible from other devices on the network.
+		// For development/test environments, this can be overridden with SC_GUI_BIND_ALL=1
+		const bindHost = app.isPackaged || process.env.SC_GUI_BIND_ALL === '1' ? '0.0.0.0' : '127.0.0.1'
 		this.app
 			.listen(this.port, bindHost)
 			.then(() => log.info(`Feathers server listening on ${bindHost}:${this.port}`))

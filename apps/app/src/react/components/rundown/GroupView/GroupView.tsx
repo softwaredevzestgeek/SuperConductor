@@ -743,7 +743,7 @@ export const GroupView: React.FC<{
 									title={
 										group.autoStep
 											? 'Auto Step on Repeat enabled.\n\nEach scheduled start time will play the next part in sequence.\n\nClick to disable.'
-											: 'Enable Auto Step on Repeat (cycle through parts at each scheduled start time).'
+											: 'Enable Auto Step on Repeat.\n\nEach scheduled start time will play the next part in sequence.'
 									}
 									value="auto-step-schedule"
 									selected={group.autoStep ?? false}

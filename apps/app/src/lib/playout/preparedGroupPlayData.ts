@@ -40,7 +40,7 @@ export function prepareGroupPlayData(group: Group, now?: number): GroupPreparedP
 	if (group.disabled) {
 		return null
 	}
-	if (!now) now = Date.now()
+	if (now === undefined) now = Date.now()
 
 	if (group.oneAtATime) {
 		let validUntil: number | undefined = undefined

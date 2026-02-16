@@ -76,14 +76,27 @@ Assign keys on Stream&nbsp;Deck or X-keys to playout actions.
 
 ## Web GUI
 
-SuperConductor includes an optional web-based GUI that can be opened in a browser.
+SuperConductor includes an optional web-based GUI that can be opened in a browser. The same interface is available in both the desktop app and the Web UI.
+
+### How to access the Web UI
 
 - **Default port**: `5500`
-- **Local access (same machine)**: `http://localhost:5500/gui/`
-- **Remote access (other machines)**: `http://<server-ip>:5500/gui/`
-  - In packaged/release builds the internal web server binds to `0.0.0.0`, so the GUI is reachable from other machines on the network (subject to firewalls).
-  - In development builds it binds to `127.0.0.1` by default; this can be overridden for lab/testing environments by starting SuperConductor with `SC_GUI_BIND_ALL=1` in the environment.
-- From the desktop app you can also open the web GUI via the “Open Web Interface” menu item, which launches the default browser to the correct URL.
+- **From the same machine**: open `http://localhost:5500/gui/` in your browser.
+- **From another machine on the network**: open `http://<server-ip>:5500/gui/`, where `<server-ip>` is the IP address of the machine running SuperConductor (e.g. `http://192.168.1.10:5500/gui/`).
+- **From the desktop app**: use the **“Open Web Interface”** menu item to open the default browser to the correct URL.
+
+### Local vs remote access
+
+The internal web server binds to **all network interfaces** (`0.0.0.0`) by default, so the Web UI is reachable from other machines on your network. This applies to both packaged (release) and development builds.
+
+- **Firewall**: ensure port `5500` is allowed for incoming connections if you need remote access.
+- **Restrict to localhost**: to allow only the same machine to access the Web UI (e.g. for security or development), set the environment variable `SC_GUI_BIND_LOCALHOST=1` before starting SuperConductor. The server will then bind to `127.0.0.1` only.
+
+### Notes for running the Web GUI
+
+- Use the full path including the trailing slash: `/gui/` (e.g. `http://localhost:5500/gui/`) so assets load correctly.
+- The Web UI uses the same API and WebSocket connection as the desktop app; the machine running SuperConductor must be reachable on port `5500` from the browser.
+- CORS is configured to allow browser clients from any origin; the API and real-time updates work when the browser is on another machine.
 
 ## HTTP API
 

@@ -97,6 +97,7 @@ The internal web server binds to **all network interfaces** (`0.0.0.0`) by defau
 - Use the full path including the trailing slash: `/gui/` (e.g. `http://localhost:5500/gui/`) so assets load correctly.
 - The Web UI uses the same API and WebSocket connection as the desktop app; the machine running SuperConductor must be reachable on port `5500` from the browser.
 - CORS is configured to allow browser clients from any origin; the API and real-time updates work when the browser is on another machine.
+- **Development (`yarn start` from repo root):** The Web UI is served from the built frontend in the `build` folder. That folder is created when you run **`yarn build`** (from the repo root). If you only run `yarn start` without building first, `/gui/` will return 404 until you run `yarn build` once. This applies on all platforms (including Windows).
 
 ## HTTP API
 

@@ -1,3 +1,4 @@
+import fs from 'fs'
 import path from 'path'
 import { EverythingService } from '../EverythingService.js'
 import { LoggerLike } from '@shared/api'
@@ -100,11 +101,22 @@ export class ApiServer {
 		{
 			let guiUrlPath: string
 			if (app.isPackaged) {
-				// In production/packaged mode, build folder is in the app path
 				guiUrlPath = path.resolve(app.getAppPath(), 'build')
 			} else {
-				// In development mode, build folder is relative to app path
-				guiUrlPath = path.resolve(app.getAppPath(), '../build')
+				// In development: Vite outputs to <app>/build. Prefer app path, fallback to cwd (e.g. Windows + yarn start).
+				const appPathBuild = path.resolve(app.getAppPath(), 'build')
+				const cwdBuild = path.resolve(process.cwd(), 'build')
+				guiUrlPath =
+					fs.existsSync(appPathBuild) && fs.statSync(appPathBuild).isDirectory()
+						? appPathBuild
+						: fs.existsSync(cwdBuild) && fs.statSync(cwdBuild).isDirectory()
+							? cwdBuild
+							: appPathBuild
+				if (!fs.existsSync(guiUrlPath) || !fs.statSync(guiUrlPath).isDirectory()) {
+					log.warn(
+						`Web GUI build folder not found at ${guiUrlPath}. Run "yarn build" (or "vite build" in apps/app) once to enable the Web UI at /gui/`
+					)
+				}
 			}
 
 			// Add redirect from /gui to /gui/ for proper asset loading (must be before static serving)
